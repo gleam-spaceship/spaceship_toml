@@ -13,42 +13,50 @@ import spaceship_toml/internal/types.{
 
 /// Serialize a Document back to a TOML string.
 pub fn to_string(doc: Document) -> String {
-  do_to_string(doc.lines, "", [])
+  do_to_string(doc.lines, "", [], False)
 }
 
-fn do_to_string(lines: List(Line), acc: String, table: List(String)) -> String {
+fn do_to_string(lines: List(Line), acc: String, table: List(String), prev_was_entry: Bool) -> String {
   case lines {
     [] -> acc
 
     [Comment(_, raw), ..rest] -> {
-      do_to_string(rest, acc <> raw <> "\n", table)
+      do_to_string(rest, acc <> raw <> "\n", table, False)
     }
 
     [Blank(_), ..rest] -> {
-      do_to_string(rest, acc <> "\n", table)
+      do_to_string(rest, acc <> "\n", table, False)
     }
 
     [TableHeader(_, path), ..rest] -> {
       let header = "[" <> string.join(path, ".") <> "]"
-      do_to_string(rest, acc <> header <> "\n", path)
+      let acc = case prev_was_entry {
+        True -> acc <> "\n"
+        False -> acc
+      }
+      do_to_string(rest, acc <> header <> "\n", path, False)
     }
 
     [ArrayOfTablesHeader(_, path), ..rest] -> {
       let header = "[[" <> string.join(path, ".") <> "]]"
-      do_to_string(rest, acc <> header <> "\n", path)
+      let acc = case prev_was_entry {
+        True -> acc <> "\n"
+        False -> acc
+      }
+      do_to_string(rest, acc <> header <> "\n", path, False)
     }
 
     [Entry(_, key, value), ..rest] -> {
       // Only strip table prefix if key starts with it
       let leaf_key = case key, table {
-        [first, ..rest_key], [table_first, ..rest_table] if first == table_first -> {
+        [first, .._rest_key], [table_first, .._rest_table] if first == table_first -> {
           list.drop(key, list.length(table))
         }
         _, _ -> key
       }
       let key_str = format_key(leaf_key)
       let val_str = serialize_value(value)
-      do_to_string(rest, acc <> key_str <> " = " <> val_str <> "\n", table)
+      do_to_string(rest, acc <> key_str <> " = " <> val_str <> "\n", table, True)
     }
   }
 }
