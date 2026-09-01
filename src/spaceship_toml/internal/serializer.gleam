@@ -39,9 +39,13 @@ fn do_to_string(lines: List(Line), acc: String, table: List(String)) -> String {
     }
 
     [Entry(_, key, value), ..rest] -> {
-      // Strip table prefix from key
-      let prefix_len = list.length(table)
-      let leaf_key = list.drop(key, prefix_len)
+      // Only strip table prefix if key starts with it
+      let leaf_key = case key, table {
+        [first, ..rest_key], [table_first, ..rest_table] if first == table_first -> {
+          list.drop(key, list.length(table))
+        }
+        _, _ -> key
+      }
       let key_str = format_key(leaf_key)
       let val_str = serialize_value(value)
       do_to_string(rest, acc <> key_str <> " = " <> val_str <> "\n", table)
