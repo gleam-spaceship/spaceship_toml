@@ -231,6 +231,7 @@ fn do_parse_key_path(
 fn parse_key_segment(
   tokens: List(Token),
 ) -> Result(#(String, List(Token)), ParseError) {
+  let tokens = skip_whitespace_tokens(tokens)
   case tokens {
     [tokenizer.BareKey(_, value), ..rest] -> Ok(#(value, rest))
     [tokenizer.BareString(_, value), ..rest] -> Ok(#(value, rest))
@@ -245,6 +246,7 @@ fn parse_key_segment(
 fn parse_value(
   tokens: List(Token),
 ) -> Result(#(TomlValue, List(Token)), ParseError) {
+  let tokens = skip_whitespace_tokens(tokens)
   case tokens {
     [] -> Error(UnexpectedEOF(expected: "value"))
 
@@ -329,6 +331,7 @@ fn parse_inline_table_entries(
   case parse_key_path(tokens) {
     Error(e) -> Error(e)
     Ok(#(key_parts, remaining)) -> {
+      let remaining = skip_whitespace_tokens(remaining)
       case remaining {
         [tokenizer.Equals(_), ..rest2] -> {
           case parse_value(rest2) {
@@ -336,6 +339,7 @@ fn parse_inline_table_entries(
             Ok(#(value, rest3)) -> {
               let key = string.join(key_parts, ".")
               let acc = dict.insert(acc, key, value)
+              let rest3 = skip_whitespace_tokens(rest3)
               case rest3 {
                 [tokenizer.Comma(_), ..rest4] ->
                   parse_inline_table_entries(rest4, acc)
