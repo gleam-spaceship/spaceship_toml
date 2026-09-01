@@ -128,6 +128,14 @@ pub fn add_table(
   editor.add_table(doc, path, line_number)
 }
 
+pub fn add_array_of_tables(
+  doc: Document,
+  path: List(String),
+  line_number: Option(Int),
+) -> Result(Document, EditError) {
+  editor.add_array_of_tables(doc, path, line_number)
+}
+
 // ── Value Constructors ────────────────────────────────────────
 
 pub fn string(value: String) -> TomlValue {
