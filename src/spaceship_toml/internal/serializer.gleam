@@ -16,7 +16,12 @@ pub fn to_string(doc: Document) -> String {
   do_to_string(doc.lines, "", [], False)
 }
 
-fn do_to_string(lines: List(Line), acc: String, table: List(String), prev_was_entry: Bool) -> String {
+fn do_to_string(
+  lines: List(Line),
+  acc: String,
+  table: List(String),
+  prev_was_entry: Bool,
+) -> String {
   case lines {
     [] -> acc
 
@@ -49,14 +54,19 @@ fn do_to_string(lines: List(Line), acc: String, table: List(String), prev_was_en
     [Entry(_, key, value), ..rest] -> {
       // Only strip table prefix if key starts with it
       let leaf_key = case key, table {
-        [first, .._rest_key], [table_first, .._rest_table] if first == table_first -> {
+        [first, ..], [table_first, ..] if first == table_first -> {
           list.drop(key, list.length(table))
         }
         _, _ -> key
       }
       let key_str = format_key(leaf_key)
       let val_str = serialize_value(value)
-      do_to_string(rest, acc <> key_str <> " = " <> val_str <> "\n", table, True)
+      do_to_string(
+        rest,
+        acc <> key_str <> " = " <> val_str <> "\n",
+        table,
+        True,
+      )
     }
   }
 }

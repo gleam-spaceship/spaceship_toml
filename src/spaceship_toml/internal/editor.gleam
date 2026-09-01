@@ -480,24 +480,6 @@ fn insert_line_at(
   }
 }
 
-fn update_or_append(
-  lines: List(Line),
-  key: List(String),
-  value: TomlValue,
-) -> List(Line) {
-  case lines {
-    [] -> [Entry(line_number: 0, key: key, value: value)]
-
-    [Entry(_, entry_key, _), ..rest] if entry_key == key -> {
-      // Update existing entry (keep original line number)
-      let line_number = get_line_number(hd_or_default(lines))
-      [Entry(line_number: line_number, key: key, value: value), ..rest]
-    }
-
-    [line, ..rest] -> [line, ..update_or_append(rest, key, value)]
-  }
-}
-
 fn find_entry(lines: List(Line), key: List(String)) -> Result(Int, Nil) {
   case lines {
     [] -> Error(Nil)
@@ -522,59 +504,6 @@ fn update_entry(
   }
 }
 
-/// Find the position to insert an entry for a given key.
-/// Inserts after the last entry in the same table, or at the end.
-fn find_entry_insert_position(lines: List(Line), key: List(String)) -> Int {
-  // For a key like ["assets", "directory"], find entries with prefix ["assets"]
-  // and the ["assets"] table header
-  let table_prefix = case key {
-    [first, ..] -> [first]
-    [] -> []
-  }
-  do_find_entry_insert_position(lines, table_prefix, 0, 0)
-}
-
-fn do_find_entry_insert_position(
-  lines: List(Line),
-  table_prefix: List(String),
-  last_entry_line: Int,
-  table_header_line: Int,
-) -> Int {
-  case lines {
-    [] -> {
-      // Return after the last entry in the same table, or after the table header
-      case last_entry_line > 0 {
-        True -> last_entry_line + 1
-        False -> table_header_line + 1
-      }
-    }
-    [Entry(line_number, entry_key, _), ..rest] -> {
-      // Check if this entry belongs to the same table
-      let entry_prefix = case entry_key {
-        [first, ..] -> [first]
-        [] -> []
-      }
-      let new_last = case entry_prefix == table_prefix {
-        True -> line_number
-        False -> last_entry_line
-      }
-      do_find_entry_insert_position(rest, table_prefix, new_last, table_header_line)
-    }
-    [TableHeader(line_number, path), ..rest] -> {
-      // Track the table header if it matches
-      let new_header = case path == table_prefix {
-        True -> line_number
-        False -> table_header_line
-      }
-      do_find_entry_insert_position(rest, table_prefix, last_entry_line, new_header)
-    }
-    [ArrayOfTablesHeader(_, _), ..rest] -> {
-      do_find_entry_insert_position(rest, table_prefix, last_entry_line, table_header_line)
-    }
-    [_, ..rest] -> do_find_entry_insert_position(rest, table_prefix, last_entry_line, table_header_line)
-  }
-}
-
 fn find_max_line_number(lines: List(Line), max: Int) -> Int {
   case lines {
     [] -> max
@@ -589,34 +518,6 @@ fn find_max_line_number(lines: List(Line), max: Int) -> Int {
   }
 }
 
-fn find_last_root_entry_line(lines: List(Line)) -> Int {
-  case lines {
-    [] -> 0
-    [Entry(line_number, key, _), ..rest] -> {
-      let is_root = case key {
-        [_] -> True
-        _ -> False
-      }
-      case is_root {
-        True -> {
-          let rest_max = find_last_root_entry_line(rest)
-          case line_number > rest_max {
-            True -> line_number
-            False -> rest_max
-          }
-        }
-        False -> {
-          case rest {
-            [] -> 0
-            _ -> find_last_root_entry_line(rest)
-          }
-        }
-      }
-    }
-    [_, ..rest] -> find_last_root_entry_line(rest)
-  }
-}
-
 fn get_line_number(line: Line) -> Int {
   case line {
     Comment(line_number, _) -> line_number
@@ -624,13 +525,6 @@ fn get_line_number(line: Line) -> Int {
     TableHeader(line_number, _) -> line_number
     ArrayOfTablesHeader(line_number, _) -> line_number
     Entry(line_number, _, _) -> line_number
-  }
-}
-
-fn hd_or_default(list: List(a)) -> a {
-  case list {
-    [first, ..] -> first
-    _ -> panic as "empty list"
   }
 }
 

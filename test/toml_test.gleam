@@ -12,18 +12,18 @@ pub fn main() {
 
 pub fn parse_inline_table_test() {
   let input = "note_shared = { path = \"../shared\" }\n"
-  
+
   // First, let's see what tokens we get
   case tokenizer.tokenize(input) {
     Ok(tokens) -> {
       io.println("Tokens:")
       list.each(tokens, fn(t) { io.println(token_to_string(t)) })
     }
-    Error(e) -> {
+    Error(_e) -> {
       io.println("Tokenize error")
     }
   }
-  
+
   // Now try parsing
   let result = spaceship_toml.parse(input)
   case result {
@@ -54,11 +54,20 @@ fn error_to_string(e) -> String {
   case e {
     types.InvalidKey(line) -> "InvalidKey at line " <> int.to_string(line)
     types.InvalidValue(line) -> "InvalidValue at line " <> int.to_string(line)
-    types.UnterminatedString(line) -> "UnterminatedString at line " <> int.to_string(line)
+    types.UnterminatedString(line) ->
+      "UnterminatedString at line " <> int.to_string(line)
     types.UnexpectedCharacter(char, expected, line) ->
-      "UnexpectedCharacter '" <> char <> "' expected '" <> expected <> "' at line " <> int.to_string(line)
-    types.UnexpectedEOF(expected) -> "UnexpectedEOF expected '" <> expected <> "'"
-    types.DuplicateKey(_key, line) -> "DuplicateKey at line " <> int.to_string(line)
-    types.InvalidTableHeader(line) -> "InvalidTableHeader at line " <> int.to_string(line)
+      "UnexpectedCharacter '"
+      <> char
+      <> "' expected '"
+      <> expected
+      <> "' at line "
+      <> int.to_string(line)
+    types.UnexpectedEOF(expected) ->
+      "UnexpectedEOF expected '" <> expected <> "'"
+    types.DuplicateKey(_key, line) ->
+      "DuplicateKey at line " <> int.to_string(line)
+    types.InvalidTableHeader(line) ->
+      "InvalidTableHeader at line " <> int.to_string(line)
   }
 }
