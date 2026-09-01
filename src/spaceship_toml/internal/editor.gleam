@@ -483,7 +483,7 @@ fn insert_line_at(
 fn find_entry(lines: List(Line), key: List(String)) -> Result(Int, Nil) {
   case lines {
     [] -> Error(Nil)
-    [Entry(line_number, entry_key, _), ..rest] if entry_key == key -> {
+    [Entry(line_number, entry_key, _rest), ..rest] if entry_key == key -> {
       Ok(line_number)
     }
     [_, ..rest] -> find_entry(rest, key)
