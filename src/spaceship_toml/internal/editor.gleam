@@ -529,4 +529,5 @@ fn get_line_number(line: Line) -> Int {
 }
 
 @external(erlang, "erlang", "integer_to_binary")
+@external(javascript, "./serializer_ffi.mjs", "intToString")
 fn int_to_string(a: Int) -> String

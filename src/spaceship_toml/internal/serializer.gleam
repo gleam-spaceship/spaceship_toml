@@ -313,7 +313,9 @@ fn escape_key(s: String) -> String {
 // ── External Helpers ──────────────────────────────────────────
 
 @external(erlang, "erlang", "integer_to_binary")
+@external(javascript, "./serializer_ffi.mjs", "intToString")
 fn int_to_string(a: Int) -> String
 
 @external(erlang, "erlang", "float_to_binary")
+@external(javascript, "./serializer_ffi.mjs", "floatToString")
 fn float_to_string(a: Float) -> String

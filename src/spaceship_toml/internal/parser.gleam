@@ -605,4 +605,5 @@ fn describe_token(token: Token) -> String {
 }
 
 @external(erlang, "float_to_str", "convert")
+@external(javascript, "./float_to_str.mjs", "convert")
 fn float_to_str(a: Float) -> String

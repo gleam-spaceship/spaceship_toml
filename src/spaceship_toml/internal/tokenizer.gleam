@@ -776,7 +776,8 @@ fn take_while_ws(
 
 // ── Character Classification (using regex) ────────────────────
 
-const re_bare_key_char = "^[A-Za-z0-9_\\-\\x{00B2}\\x{00B3}\\x{00B9}\\x{2070}-\\x{2079}\\x{2080}-\\x{2089}\\x{2160}-\\x{216F}\\x{2170}-\\x{217F}\\x{2460}-\\x{24FF}\\x{FF10}-\\x{FF19}]"
+// JavaScript-compatible regex for bare key characters
+const re_bare_key_char = "^[A-Za-z0-9_\\-]"
 
 const re_digit = "^[0-9]"
 
