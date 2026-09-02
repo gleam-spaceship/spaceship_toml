@@ -1,5 +1,5 @@
 name = "spaceship_toml"
-version = "0.1.0"
+version = "0.1.1"
 
 description = "TOML parser, serializer, and editor for Gleam with comment preservation"
 licences = ["Apache-2.0"]
